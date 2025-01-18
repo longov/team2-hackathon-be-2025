@@ -43,21 +43,23 @@ const functions = {
       contract_addresses: contract_address
     };
     const headers = {
-      'x-cg-demo-api-key': process.env.GOPLUS_API_KEY
+      'x-cg-demo-api-key': 'CG-fsX5bfdaGMmezZCai67gH1rT'
     }
 
     const response = await axios.get(url, { params, headers });
-    console.log(contract_address)
+    console.log(response.data)
     return JSON.stringify(response.data);
   },
   fetch_trending_coins: async () => {
     const url = 'https://api.coingecko.com/api/v3/search/trending';
 
     const headers = {
-      'x-cg-demo-api-key':  process.env.COINGECKO_API_KEY
+      'x-cg-demo-api-key':'CG-fsX5bfdaGMmezZCai67gH1rT'
     }
 
     const response = await axios.get(url, { headers });
+
+    console.log(response.data);
     return JSON.stringify(response.data);
   },
   getCurrentTime: () => {
@@ -100,12 +102,12 @@ const tools = [{
   }
 ];
 
+const messages = [
+];
 
 // API để xử lý ChatGPT với Function Calling
 app.post('/chat', async (req, res) => {
-  const messages = [
 
-  ];
   const { chat } = req.body;
 
   try {
@@ -134,29 +136,31 @@ app.post('/chat', async (req, res) => {
 
   const isToolCall = completion.choices[0].message?.tool_calls && completion.choices[0].message?.tool_calls.length > 0;
   if (isToolCall) {
-    const toolCall = completion.choices[0].message?.tool_calls[0];
-    const args = JSON.parse(toolCall.function.arguments);
     messages.push(completion.choices[0].message);
+    for (const toolCall of completion.choices[0].message.tool_calls) {
+      const name = toolCall.function.name;
+      const args = JSON.parse(toolCall.function.arguments);
 
-    const result = await functions[toolCall.function.name](args);
-
-    messages.push({
-      role: "tool",
-      tool_call_id: toolCall.id,
-      content: [
-        {
-          type: "text",
-          text: result
-        }
-      ]
-    });
-
+      const result = await functions[name](args);
+      messages.push({
+        role: "tool",
+        tool_call_id: toolCall.id,
+        content: [
+          {
+            type: "text",
+            text: result
+          }
+        ]
+      });
+    }
 
     const completion2 = await openai.chat.completions.create({
       model: "gpt-4o",
       messages,
       tools
     });
+
+
 
     return res.status(200).json(
         {
@@ -174,6 +178,9 @@ app.post('/chat', async (req, res) => {
     return res.status(500).json({
         message: "Internal server error"
     });
+    // return res.status(500).json({
+    //     message: "Internal server error"
+    // });
   }
 
   // console.log(req.body);
