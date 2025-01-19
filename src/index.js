@@ -76,7 +76,7 @@ const functions = {
     const fullCoinData = response.data.coins;
     const coinDataId = fullCoinData[0].id;
 
-    const url2 = `const url = 'https://api.coingecko.com/api/v3/coins/coinDataId`;
+    const url2 = `https://api.coingecko.com/api/v3/coins/${coinDataId}`;
     const response2 = await axios.get(url2, { headers });
 
     return JSON.stringify(response2.data);
