@@ -59,11 +59,27 @@ const functions = {
 
     const response = await axios.get(url, { headers });
 
-    console.log(response.data);
     return JSON.stringify(response.data);
   },
-  getCurrentTime: () => {
-    return { time: new Date().toISOString() };
+  search_coingecko: async (props) => {
+    const keyword = props.query;
+    console.log(keyword);
+    const url = `https://api.coingecko.com/api/v3/search`;
+    const headers = {
+      'x-cg-demo-api-key':'CG-fsX5bfdaGMmezZCai67gH1rT'
+    }
+    const params = {
+      query: keyword
+    };
+    const response = await axios.get(url, {params, headers });
+
+    const fullCoinData = response.data.coins;
+    const coinDataId = fullCoinData[0].id;
+
+    const url2 = `const url = 'https://api.coingecko.com/api/v3/coins/coinDataId`;
+    const response2 = await axios.get(url2, { headers });
+
+    return JSON.stringify(response2.data);
   },
 };
 
@@ -96,6 +112,26 @@ const tools = [{
         "type": "object",
         "required": [],
         "properties": {},
+        "additionalProperties": false
+      }
+    }
+  },{
+    type: "function",
+    function: {
+      "name": "search_coingecko",
+      "description": "Search for information about cryptocurrencies using the CoinGecko API",
+      "strict": true,
+      "parameters": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search term for the cryptocurrency"
+          }
+        },
         "additionalProperties": false
       }
     }
